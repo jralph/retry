@@ -1,0 +1,7 @@
+formatter.name: pretty
+suites:
+  default:
+    spec_prefix: spec
+    src_path: src
+    namespace: Jralph\Retry
+    psr4_prefix: Jralph\Retry
