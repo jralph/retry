@@ -1,0 +1,21 @@
+{
+    "name": "jralph/retry",
+    "description": "A simple library to retry things.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Joseph Ralph",
+            "email": "josephralph4@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "phpspec/phpspec": "^3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jralph\\Retry\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
