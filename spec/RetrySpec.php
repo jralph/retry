@@ -90,7 +90,7 @@ class RetrySpec extends ObjectBehavior
             }
 
             return 'world';
-        })->retries(2)->onlyIf(function ($response) {
+        })->retries(2)->onlyIf(function (int $attempts, $response) {
             return $response == 'hello';
         })->run()->shouldReturn('world');
     }

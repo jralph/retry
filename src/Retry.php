@@ -182,13 +182,17 @@ class Retry
             $result = $thrown;
         }
 
-        if (!$this->isSuccessful($result) && $onError = $this->onError) {
-            $onError($this->attempt, $result);
-        }
-
         if ($this->shouldRetry($result)) {
+            if ($onError = $this->onError) {
+                $onError($this->attempt, $result);
+            }
+
             return $this->try();
         } else if ($result instanceof \Throwable) {
+            if ($onError = $this->onError) {
+                $onError($this->attempt, $result);
+            }
+
             throw new RetryException(
                 "Maximum number of retries reached. ($this->attempt/$this->retries)",
                 0,
