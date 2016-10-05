@@ -29,19 +29,19 @@ class RetrySpec extends ObjectBehavior
         $this->shouldThrow(\Throwable::class)->duringCommand('test');
     }
 
-    function it_sets_number_of_retries()
+    function it_sets_number_of_attempts()
     {
-        $this->retries(3);
+        $this->attempts(3);
     }
 
-    function it_should_error_if_retries_is_not_numeric()
+    function it_should_error_if_attempts_is_not_numeric()
     {
-        $this->shouldThrow(\Throwable::class)->duringRetries('nan');
+        $this->shouldThrow(\Throwable::class)->duringAttempts('nan');
     }
 
-    function it_returns_self_from_retries()
+    function it_returns_self_from_attempts()
     {
-        $this->retries(3)->shouldHaveType(Retry::class);
+        $this->attempts(3)->shouldHaveType(Retry::class);
     }
 
     function it_returns_1_for_successful_first_try()
@@ -57,7 +57,7 @@ class RetrySpec extends ObjectBehavior
             }
 
             return $attempt;
-        })->retries(2)->run()->shouldReturn(2);
+        })->attempts(2)->run()->shouldReturn(2);
     }
 
     function it_returns_27_for_27_attemepts_and_success()
@@ -68,16 +68,16 @@ class RetrySpec extends ObjectBehavior
             }
 
             return $attempt;
-        })->retries(27)->run()->shouldReturn(27);
+        })->attempts(27)->run()->shouldReturn(27);
     }
 
-    function it_throws_retry_exception_if_max_retries_reached_and_failed()
+    function it_throws_retry_exception_if_max_attempts_reached_and_failed()
     {
         $this->command(function () {
             throw new \Exception;
         });
 
-        $this->retries(2);
+        $this->attempts(2);
 
         $this->shouldThrow(RetryException::class)->duringRun();
     }
@@ -90,7 +90,7 @@ class RetrySpec extends ObjectBehavior
             }
 
             return 'world';
-        })->retries(2)->onlyIf(function (int $attempts, $response) {
+        })->attempts(2)->onlyIf(function (int $attempts, $response) {
             return $response == 'hello';
         })->run()->shouldReturn('world');
     }
@@ -132,7 +132,7 @@ class RetrySpec extends ObjectBehavior
             }
 
             return $attempt;
-        })->retries(4)->run()->shouldReturn(3);
+        })->attempts(4)->run()->shouldReturn(3);
     }
 
     function it_should_retry_until_closure()

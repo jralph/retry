@@ -15,7 +15,7 @@ function retry($attempts, callable $command, callable $onError = null)
     $retry = new Retry;
 
     if (is_numeric($attempts)) {
-        $retry->retries($attempts);
+        $retry->attempts($attempts);
     } else if ($attempts instanceof \Closure) {
         $retry->forever()->until($attempts);
     }

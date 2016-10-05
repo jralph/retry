@@ -65,7 +65,7 @@ class Retry
      * @param int $retries
      * @return Retry
      */
-    public function retries(int $retries) : Retry
+    public function attempts(int $retries) : Retry
     {
         $this->retries = $retries;
 
@@ -79,7 +79,7 @@ class Retry
      */
     public function once() : Retry
     {
-        return $this->retries(1);
+        return $this->attempts(1);
     }
 
     /**
@@ -89,7 +89,7 @@ class Retry
      */
     public function twice() : Retry
     {
-        return $this->retries(2);
+        return $this->attempts(2);
     }
 
     /**
@@ -99,7 +99,7 @@ class Retry
      */
     public function thrice() : Retry
     {
-        return $this->retries(3);
+        return $this->attempts(3);
     }
 
     /**
@@ -109,7 +109,7 @@ class Retry
      */
     public function forever() : Retry
     {
-        return $this->retries(0);
+        return $this->attempts(0);
     }
 
     /**

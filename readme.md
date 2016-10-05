@@ -66,7 +66,7 @@ $result = $retry->command(function (int $attempt) {
     }
     
     return 'Hello World!';
-})->retries(3)->run();
+})->attempts(3)->run();
 
 // Outputs 'Hello World!'
 echo $result;
@@ -75,11 +75,11 @@ echo $result;
 ### Available Methods
 
 - `$retry->command(Closure $command);` The closure to run as the command.
-- `$retry->retries(int $retries);` The maximum number of times to attempt the command.
-- `$retry->once();` Alias for `$retry->retries(1);`
-- `$retry->twice();` Alias for `$retry->retries(2);`
-- `$retry->thrice();` Alias for `$retry->retries(3);`
-- `$retry->forever();` Alias for `$retry->retries(0);` *Note: Be careful wit this!*
+- `$retry->attempts(int $attempts);` The maximum number of times to attempt the command.
+- `$retry->once();` Alias for `$retry->attempts(1);`
+- `$retry->twice();` Alias for `$retry->attempts(2);`
+- `$retry->thrice();` Alias for `$retry->attempts(3);`
+- `$retry->forever();` Alias for `$retry->attempts(0);` *Note: Be careful wit this!*
 - `$retry->until(Closure $until);` Retry until the result of `$until` returns true. *Note: Works well with `$retry->forever();`*
     - Accepts `$attempt` as the first parameter, giving the current number of attempts.
     - Accepts `$response` as the second parameter, giving the response of the last attempt.
