@@ -40,6 +40,13 @@ class Retry
     protected $until;
 
     /**
+     * A closure to run each time the command errors.
+     *
+     * @var \Closure
+     */
+    protected $onError;
+
+    /**
      * Set the command to be run.
      *
      * @param \Closure $command
@@ -134,6 +141,19 @@ class Retry
     }
 
     /**
+     * Set a callback to run each time the command fails.
+     *
+     * @param \Closure $callback
+     * @return Retry
+     */
+    public function onError(\Closure $callback) : Retry
+    {
+        $this->onError = $callback;
+
+        return $this;
+    }
+
+    /**
      * Run the command and return the number of retries it took
      * or throw an exception if the process failed.
      *
@@ -164,8 +184,12 @@ class Retry
             $result = $thrown;
         }
 
+        if (!$this->isSuccessful($result) && $onError = $this->onError) {
+            $onError($this->attempt, $result);
+        }
+
         if ($this->shouldRetry($result)) {
-            $result = $this->try();
+            return $this->try();
         } else if ($result instanceof \Throwable) {
             throw new RetryException(
                 "Maximum number of retries reached. ($this->attempt/$this->retries)",
@@ -200,7 +224,22 @@ class Retry
             return $onlyIf($response);
         }
 
-        return true;
+        return !$this->isSuccessful($response);
+    }
+
+    /**
+     * Determine if the command was successful.
+     *
+     * @param $response
+     * @return bool
+     */
+    protected function isSuccessful($response) : bool
+    {
+        if ($response instanceof \Throwable) {
+            return false;
+        }
+
+        return (bool) $response || $response === null;
     }
 
     /**

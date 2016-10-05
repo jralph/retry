@@ -101,23 +101,51 @@ class RetrySpec extends ObjectBehavior
     function it_should_retry_twice_with_twice()
     {
         $this->command(function (int $attempt) {
-
+            if ($attempt < 2) {
+                throw new \Exception;
+            }
         })->twice()->run()->shouldReturn(2);
     }
 
     function it_should_retry_thrice_with_thrice()
     {
         $this->command(function (int $attempt) {
-
+            if ($attempt < 3) {
+                throw new \Exception;
+            }
         })->thrice()->run()->shouldReturn(3);
+    }
+
+    function it_should_retry_until_success()
+    {
+        $this->command(function (int $attempt) {
+            if ($attempt < 3) {
+                throw new \Exception;
+            }
+        })->retries(4)->run()->shouldReturn(3);
     }
 
     function it_should_retry_until_closure()
     {
         $this->command(function (int $attempt) {
-
+            throw new \Exception;
         })->forever()->until(function (int $attempts, $response) {
             return $attempts === 2;
-        })->run()->shouldReturn(2);
+        });
+
+        $this->shouldThrow(RetryException::class)->duringRun();
+    }
+
+    function it_should_run_on_error()
+    {
+        $errorException = new class extends \Exception {};
+
+        $this->command(function (int $attempt) {
+            throw new \Exception;
+        })->once()->onError(function (int $attempts, $response) use ($errorException) {
+            throw $errorException;
+        });
+
+        $this->shouldThrow($errorException)->duringRun();
     }
 }
