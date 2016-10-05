@@ -46,7 +46,7 @@ class RetrySpec extends ObjectBehavior
 
     function it_returns_1_for_successful_first_try()
     {
-        $this->command(function () {})->run()->shouldReturn(1);
+        $this->command(function (int $attempt) { return $attempt; })->run()->shouldReturn(1);
     }
 
     function it_returns_2_for_2_attemepts_and_success()
@@ -55,6 +55,8 @@ class RetrySpec extends ObjectBehavior
             if ($attempt !== 2) {
                 throw new \Exception;
             }
+
+            return $attempt;
         })->retries(2)->run()->shouldReturn(2);
     }
 
@@ -64,6 +66,8 @@ class RetrySpec extends ObjectBehavior
             if ($attempt !== 27) {
                 throw new \Exception;
             }
+
+            return $attempt;
         })->retries(27)->run()->shouldReturn(27);
     }
 
@@ -88,13 +92,13 @@ class RetrySpec extends ObjectBehavior
             return 'world';
         })->retries(2)->onlyIf(function ($response) {
             return $response == 'hello';
-        })->run()->shouldReturn(2);
+        })->run()->shouldReturn('world');
     }
 
     function it_should_retry_once_with_once()
     {
         $this->command(function (int $attempt) {
-
+            return $attempt;
         })->once()->run()->shouldReturn(1);
     }
 
@@ -104,6 +108,8 @@ class RetrySpec extends ObjectBehavior
             if ($attempt < 2) {
                 throw new \Exception;
             }
+
+            return $attempt;
         })->twice()->run()->shouldReturn(2);
     }
 
@@ -113,6 +119,8 @@ class RetrySpec extends ObjectBehavior
             if ($attempt < 3) {
                 throw new \Exception;
             }
+
+            return $attempt;
         })->thrice()->run()->shouldReturn(3);
     }
 
@@ -122,6 +130,8 @@ class RetrySpec extends ObjectBehavior
             if ($attempt < 3) {
                 throw new \Exception;
             }
+
+            return $attempt;
         })->retries(4)->run()->shouldReturn(3);
     }
 

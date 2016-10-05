@@ -158,13 +158,11 @@ class Retry
      * or throw an exception if the process failed.
      *
      * @throws RetryException
-     * @return int
+     * @return mixed
      */
-    public function run() : int
+    public function run()
     {
-        $this->try();
-
-        return $this->attempt;
+        return $this->try();
     }
 
     /**
@@ -221,7 +219,7 @@ class Retry
     protected function passesOnlyIf($response) : bool
     {
         if ($onlyIf = $this->onlyIf) {
-            return $onlyIf($response);
+            return $onlyIf($this->attempt, $response);
         }
 
         return !$this->isSuccessful($response);
@@ -239,7 +237,7 @@ class Retry
             return false;
         }
 
-        return (bool) $response || $response === null;
+        return true;
     }
 
     /**
