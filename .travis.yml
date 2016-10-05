@@ -5,6 +5,8 @@ cache: vendor
 php:
   - 7
   - 7.1
-  - hhvm
+  
+before_script:
+  - travis_retry composer install --prefer-source --no-interaction --dev
 
-script: ./vendor/bin/phpspec run
+script: vendor/bin/phpspec run -v
