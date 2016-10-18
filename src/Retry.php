@@ -47,6 +47,13 @@ class Retry
     protected $onError;
 
     /**
+     * How long to wait before retrying.
+     *
+     * @var int
+     */
+    protected $wait;
+
+    /**
      * Set the command to be run.
      *
      * @param \Closure $command
@@ -154,6 +161,19 @@ class Retry
     }
 
     /**
+     * Wait for the given number of seconds before retrying.
+     *
+     * @param int $seconds
+     * @return Retry
+     */
+    public function wait(int $seconds) : Retry
+    {
+        $this->wait = $seconds;
+
+        return $this;
+    }
+
+    /**
      * Run the command and return the number of retries it took
      * or throw an exception if the process failed.
      *
@@ -185,6 +205,10 @@ class Retry
         if ($this->shouldRetry($result)) {
             if ($onError = $this->onError) {
                 $onError($this->attempt, $result);
+            }
+
+            if ($this->wait) {
+                sleep($this->wait);
             }
 
             return $this->try();

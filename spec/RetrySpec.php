@@ -34,6 +34,16 @@ class RetrySpec extends ObjectBehavior
         $this->attempts(3);
     }
 
+    function it_sets_wait_time()
+    {
+        $this->wait(1);
+    }
+
+    function it_returns_self_from_wait()
+    {
+        $this->wait(1)->shouldHaveType(Retry::class);
+    }
+
     function it_should_error_if_attempts_is_not_numeric()
     {
         $this->shouldThrow(\Throwable::class)->duringAttempts('nan');
@@ -157,5 +167,12 @@ class RetrySpec extends ObjectBehavior
         });
 
         $this->shouldThrow($errorException)->duringRun();
+    }
+
+    function it_returns_expected_result_using_wait()
+    {
+        $this->command(function (int $attempt) {
+            return $attempt;
+        })->wait(1)->run()->shouldReturn(1);  
     }
 }

@@ -76,6 +76,7 @@ echo $result;
 
 - `$retry->command(Closure $command);` The closure to run as the command.
 - `$retry->attempts(int $attempts);` The maximum number of times to attempt the command.
+- `$retry->wait(int $seconds);` The number of seconds to wait between attempts.
 - `$retry->once();` Alias for `$retry->attempts(1);`
 - `$retry->twice();` Alias for `$retry->attempts(2);`
 - `$retry->thrice();` Alias for `$retry->attempts(3);`
