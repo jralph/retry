@@ -16,7 +16,7 @@ The library includes a simple helper function for ease of use.
 *Note: On a failure to succeed in running the command, a `Jralph\Retry\RetryException` will be thrown.*
 
 ```php
-mixed retry (int|Closure $attempts , callable $command [, callable $onError = null])
+mixed retry (int|callable $attempts , callable $command [, callable $onError = null])
 ```
 
 ### Parameters
