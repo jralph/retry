@@ -5,7 +5,7 @@ namespace Jralph\Retry;
 /**
  * Retry a given callable a given number of times on failure.
  *
- * @param int|\Closure $attempts The number of attempts to try or a closure that should return true when to stop.
+ * @param int|callable $attempts The number of attempts to try or a closure that should return true when to stop.
  * @param callable $command
  * @param callable $onError
  * @return int
