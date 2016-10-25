@@ -22,7 +22,7 @@ mixed retry (int|Closure $attempts , callable $command [, callable $onError = nu
 ### Parameters
 
 - `$attempts:` The number of times to attempt a command.
-    - If a `Closure` is provided, the retry will continue until this closure returns true.
+    - If a `callable` is provided, the retry will continue until this closure returns true.
 - `$command:` The command to run each time.
 - `$onError:` An optional callback to run each time the `$command` fails.
 
@@ -74,20 +74,25 @@ echo $result;
 
 ### Available Methods
 
-- `$retry->command(Closure $command);` The closure to run as the command.
+- `$retry->command(callable $command);` The closure to run as the command.
 - `$retry->attempts(int $attempts);` The maximum number of times to attempt the command.
 - `$retry->wait(int $seconds);` The number of seconds to wait between attempts.
 - `$retry->once();` Alias for `$retry->attempts(1);`
 - `$retry->twice();` Alias for `$retry->attempts(2);`
 - `$retry->thrice();` Alias for `$retry->attempts(3);`
 - `$retry->forever();` Alias for `$retry->attempts(0);` *Note: Be careful wit this!*
-- `$retry->until(Closure $until);` Retry until the result of `$until` returns true. *Note: Works well with `$retry->forever();`*
+- `$retry->until(callable $until);` Retry until the result of `$until` returns true. *Note: Works well with `$retry->forever();`*
     - Accepts `$attempt` as the first parameter, giving the current number of attempts.
     - Accepts `$response` as the second parameter, giving the response of the last attempt.
-- `$retry->onlyIf(Closure $onlyIf);` Retry only if the `$onlyIf` returns true.
+- `$retry->onlyIf(callable $onlyIf);` Retry only if the `$onlyIf` returns true.
     - Accepts `$attempt` as the first parameter, giving the current number of attempts.
     - Accepts `$response` as the second parameter, giving the response of the last attempt.
-- `$retry->onError(Closure $onError);` A callback to run each time the retry fails.
+- `$retry->onError(callable $onError);` A callback to run each time the retry fails.
     - Accepts `$attempt` as the first parameter, giving the current number of attempts.
     - Accepts `$response` as the second parameter, giving the response of the last attempt.
 - `$retry->run();` Run the command using the specified setup.
+
+## Change Log
+
+- `1.1.1` Changed all methods using `\Closure` to use `callable` instead.
+- `1.1.0` Added `wait(int $seconds);` method.

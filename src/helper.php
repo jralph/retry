@@ -16,27 +16,15 @@ function retry($attempts, callable $command, callable $onError = null)
 
     if (is_numeric($attempts)) {
         $retry->attempts($attempts);
-    } else if ($attempts instanceof \Closure) {
+    } else if (is_callable($attempts)) {
         $retry->forever()->until($attempts);
     }
 
     if ($onError) {
-        if ($onError instanceof \Closure) {
-            $retry->onError($onError);
-        } else {
-            $retry->onError(function () use ($onError) {
-                return call_user_func($onError);
-            });
-        }
+        $retry->onError($onError);
     }
 
-    if ($command instanceof \Closure) {
-        $retry->command($command);
-    } else {
-        $retry->command(function () use ($command) {
-            return call_user_func($command);
-        });
-    }
+    $retry->command($command);
 
     return $retry->run();
 }

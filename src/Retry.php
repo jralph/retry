@@ -7,7 +7,7 @@ class Retry
     /**
      * The command to execute.
      *
-     * @var \Closure
+     * @var callable
      */
     protected $command;
 
@@ -28,21 +28,21 @@ class Retry
     /**
      * A closure to determine if a retry should be attempted.
      *
-     * @var \Closure
+     * @var callable
      */
     protected $onlyIf;
 
     /**
      * A closure to determine if the retries should stop.
      *
-     * @var \Closure
+     * @var callable
      */
     protected $until;
 
     /**
      * A closure to run each time the command errors.
      *
-     * @var \Closure
+     * @var callable
      */
     protected $onError;
 
@@ -56,10 +56,10 @@ class Retry
     /**
      * Set the command to be run.
      *
-     * @param \Closure $command
+     * @param callable $command
      * @return Retry
      */
-    public function command(\Closure $command) : Retry
+    public function command(callable $command) : Retry
     {
         $this->command = $command;
 
@@ -124,10 +124,10 @@ class Retry
      * The closure accepts the number of current attempts as the first argument and
      * the result of the last attempt as the second argument.
      *
-     * @param \Closure $until
+     * @param callable $until
      * @return Retry
      */
-    public function until(\Closure $until) : Retry
+    public function until(callable $until) : Retry
     {
         $this->until = $until;
 
@@ -137,10 +137,10 @@ class Retry
     /**
      * Set a callback to check if a retry should be attempted or not.
      *
-     * @param \Closure $callback A callback that accepts the response/throwable from the attempt at the first param.
+     * @param callable $callback A callback that accepts the response/throwable from the attempt at the first param.
      * @return Retry
      */
-    public function onlyIf(\Closure $callback) : Retry
+    public function onlyIf(callable $callback) : Retry
     {
         $this->onlyIf = $callback;
 
@@ -150,10 +150,10 @@ class Retry
     /**
      * Set a callback to run each time the command fails.
      *
-     * @param \Closure $callback
+     * @param callable $callback
      * @return Retry
      */
-    public function onError(\Closure $callback) : Retry
+    public function onError(callable $callback) : Retry
     {
         $this->onError = $callback;
 
@@ -195,16 +195,14 @@ class Retry
         $this->attempt++;
 
         try {
-            $command = $this->command;
-
-            $result = $command($this->attempt);
+            $result = $this->callCommand();
         } catch (\Throwable $thrown) {
             $result = $thrown;
         }
 
         if ($this->shouldRetry($result)) {
-            if ($onError = $this->onError) {
-                $onError($this->attempt, $result);
+            if ($this->onError) {
+                $this->callOnError($result);
             }
 
             if ($this->wait) {
@@ -213,8 +211,8 @@ class Retry
 
             return $this->try();
         } else if ($result instanceof \Throwable) {
-            if ($onError = $this->onError) {
-                $onError($this->attempt, $result);
+            if ($this->onError) {
+                $this->callOnError($result);
             }
 
             throw new RetryException(
@@ -225,6 +223,27 @@ class Retry
         }
 
         return $result;
+    }
+
+    /**
+     * Call the provided command and return its response.
+     *
+     * @return mixed
+     */
+    protected function callCommand()
+    {
+        return call_user_func($this->command, $this->attempt);
+    }
+
+    /**
+     * Call the provided on error handler.
+     *
+     * @param $result
+     * @return mixed
+     */
+    protected function callOnError($result)
+    {
+        return call_user_func($this->onError, $this->attempt, $result);
     }
 
     /**
@@ -246,11 +265,22 @@ class Retry
      */
     protected function passesOnlyIf($response) : bool
     {
-        if ($onlyIf = $this->onlyIf) {
-            return $onlyIf($this->attempt, $response);
+        if ($this->onlyIf) {
+            return $this->callOnlyIf($response);
         }
 
         return !$this->isSuccessful($response);
+    }
+
+    /**
+     * Call the onlyIf handler.
+     *
+     * @param $response
+     * @return mixed
+     */
+    protected function callOnlyIf($response)
+    {
+        return call_user_func($this->onlyIf, $this->attempt, $response);
     }
 
     /**
@@ -276,11 +306,22 @@ class Retry
      */
     protected function reachedUntil($response) : bool
     {
-        if ($until = $this->until) {
-            return (bool) $until($this->attempt, $response);
+        if ($this->until) {
+            return $this->callUntil($response);
         }
 
         return false;
+    }
+
+    /**
+     * Call the until handler.
+     *
+     * @param $response
+     * @return bool
+     */
+    protected function callUntil($response)
+    {
+        return (bool) call_user_func($this->until, $this->attempt, $response);
     }
 
     /**

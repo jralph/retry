@@ -44,6 +44,48 @@ class RetrySpec extends ObjectBehavior
         $this->wait(1)->shouldHaveType(Retry::class);
     }
 
+    function it_accepts_closure_as_until()
+    {
+        $this->until(function() {});
+    }
+
+    function it_accepts_callable_as_until()
+    {
+        $class = new class {
+            public function until() {}
+        };
+
+        $this->until([$class, 'until']);
+    }
+
+    function it_accepts_closure_as_only_if()
+    {
+        $this->onlyIf(function() {});
+    }
+
+    function it_accepts_callable_as_only_if()
+    {
+        $class = new class {
+            public function onlyIf() {}
+        };
+
+        $this->onlyIf([$class, 'onlyIf']);
+    }
+
+    function it_accepts_closure_as_on_error()
+    {
+        $this->onError(function() {});
+    }
+
+    function it_accepts_callable_as_on_error()
+    {
+        $class = new class {
+            public function onError() {}
+        };
+
+        $this->onError([$class, 'onError']);
+    }
+
     function it_should_error_if_attempts_is_not_numeric()
     {
         $this->shouldThrow(\Throwable::class)->duringAttempts('nan');
@@ -52,6 +94,35 @@ class RetrySpec extends ObjectBehavior
     function it_returns_self_from_attempts()
     {
         $this->attempts(3)->shouldHaveType(Retry::class);
+    }
+
+    function it_accepts_closure_as_command()
+    {
+        $this->command(function() {});
+    }
+
+    function it_accepts_callable_as_command()
+    {
+        $class = new class {
+            public function run()
+            {
+
+            }
+        };
+
+        $this->command([$class, 'run']);
+    }
+
+    function it_retusn_1_for_successful_first_try_with_callable()
+    {
+        $class = new class {
+            public function run(int $attempt)
+            {
+                return $attempt;
+            }
+        };
+
+        $this->command([$class, 'run'])->run()->shouldReturn(1);
     }
 
     function it_returns_1_for_successful_first_try()
@@ -105,6 +176,24 @@ class RetrySpec extends ObjectBehavior
         })->run()->shouldReturn('world');
     }
 
+    function it_should_retry_based_on_condition_callable()
+    {
+        $class = new class {
+            public function onlyIf(int $attempts, $response) : bool
+            {
+                return $response == 'hello';
+            }
+        };
+
+        $this->command(function (int $attempt) {
+            if ($attempt !== 2) {
+                return 'hello';
+            }
+
+            return 'world';
+        })->attempts(2)->onlyIf([$class, 'onlyIf'])->run()->shouldReturn('world');
+    }
+
     function it_should_retry_once_with_once()
     {
         $this->command(function (int $attempt) {
@@ -156,6 +245,22 @@ class RetrySpec extends ObjectBehavior
         $this->shouldThrow(RetryException::class)->duringRun();
     }
 
+    function it_should_retry_until_callable()
+    {
+        $class = new class {
+            public function until(int $attempts, $response)
+            {
+                return $attempts === 2;
+            }
+        };
+
+        $this->command(function (int $attempt) {
+            throw new \Exception;
+        })->forever()->until([$class, 'until']);
+
+        $this->shouldThrow(RetryException::class)->duringRun();
+    }
+
     function it_should_run_on_error()
     {
         $errorException = new class extends \Exception {};
@@ -165,6 +270,31 @@ class RetrySpec extends ObjectBehavior
         })->once()->onError(function (int $attempts, $response) use ($errorException) {
             throw $errorException;
         });
+
+        $this->shouldThrow($errorException)->duringRun();
+    }
+
+    function it_should_run_on_error_with_callable()
+    {
+        $errorException = new class extends \Exception {};
+
+        $class = new class($errorException) {
+            protected $errorException;
+
+            public function __construct($errorException)
+            {
+                $this->errorException = $errorException;
+            }
+
+            public function onError(int $attempts, $response)
+            {
+                throw $this->errorException;
+            }
+        };
+
+        $this->command(function (int $attempt) {
+            throw new \Exception;
+        })->once()->onError([$class, 'onError']);
 
         $this->shouldThrow($errorException)->duringRun();
     }
