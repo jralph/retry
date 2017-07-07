@@ -206,7 +206,8 @@ class Retry
             }
 
             if ($this->wait) {
-                sleep($this->wait);
+                $start = time();
+                while (time() < $start + 3) {}
             }
 
             return $this->try();
