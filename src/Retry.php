@@ -331,6 +331,6 @@ class Retry
      */
     protected function retryAvailable()
     {
-        return $this->attempt < $this->retries || $this->retries == false || $this->retries == INF;
+        return $this->attempt < $this->retries || ! $this->retries || $this->retries == INF;
     }
 }
