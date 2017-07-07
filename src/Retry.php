@@ -182,16 +182,6 @@ class Retry
      */
     public function run()
     {
-        return $this->try();
-    }
-
-    /**
-     * Attempt
-     * @return mixed
-     * @throws RetryException
-     */
-    protected function try()
-    {
         $this->attempt++;
 
         try {
@@ -211,7 +201,7 @@ class Retry
                 while (time() < $end) {}
             }
 
-            return $this->try();
+            return $this->run();
         } else if ($result instanceof \Throwable) {
             if ($this->onError) {
                 $this->callOnError($result);
