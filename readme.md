@@ -74,7 +74,7 @@ echo $result;
 
 ### Available Methods
 
-- `$retry->command(callable $command);` The closure to run as the command.
+- `new Retry(callable|Command $command);` The closure or Command object to run as the command.
 - `$retry->attempts(int $attempts);` The maximum number of times to attempt the command.
 - `$retry->wait(int $seconds);` The number of seconds to wait between attempts.
 - `$retry->once();` Alias for `$retry->attempts(1);`
@@ -94,5 +94,6 @@ echo $result;
 
 ## Change Log
 
+- `1.2.0` Updated to php 7.1+ and deprecated `command` method in favour of padding a command object into the constructor.
 - `1.1.1` Changed all methods using `\Closure` to use `callable` instead.
 - `1.1.0` Added `wait(int $seconds);` method.
