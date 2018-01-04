@@ -75,14 +75,10 @@ echo $result;
 
 ### Available Methods
 
-- `new Retry(callable|Command $command);` The closure or Command object to run as the command.
-- `$retry->attempts(int $attempts);` The maximum number of times to attempt the command.
+- `new Retry(Command $command);` The closure or Command object to run as the command.
+- `$retry->attempts(int $attempts);` The maximum number of times to attempt the command. Note, an attempt count of 0 will run for ever!
 - `$retry->wait(int $seconds);` The number of seconds to wait between attempts.
-- `$retry->once();` Alias for `$retry->attempts(1);`
-- `$retry->twice();` Alias for `$retry->attempts(2);`
-- `$retry->thrice();` Alias for `$retry->attempts(3);`
-- `$retry->forever();` Alias for `$retry->attempts(0);` *Note: Be careful wit this!*
-- `$retry->until(callable $until);` Retry until the result of `$until` returns true. *Note: Works well with `$retry->forever();`*
+- `$retry->until(callable $until);` Retry until the result of `$until` returns true. *Note: Works well with `$retry->attempts(0);`*
     - Accepts `$attempt` as the first parameter, giving the current number of attempts.
     - Accepts `$response` as the second parameter, giving the response of the last attempt.
 - `$retry->onlyIf(callable $onlyIf);` Retry only if the `$onlyIf` returns true.
@@ -95,6 +91,14 @@ echo $result;
 
 ## Change Log
 
-- `1.2.0` Updated to php 7.1+ and deprecated `command` method in favour of padding a command object into the constructor.
-- `1.1.1` Changed all methods using `\Closure` to use `callable` instead.
-- `1.1.0` Added `wait(int $seconds);` method.
+- `2.0.0`
+  - Removing of deprecated methods.
+  - Removal of once, twice, thrice, forever methods in favour of using `attempts(int $attempts)`.
+  - Constructor only accepts `Command` objects.
+- `1.2.0` 
+  - Updated to php 7.1+.
+  - Dprecated `command` method in favour of passing a command object into the constructor.
+- `1.1.1`
+  - Changed all methods using `\Closure` to use `callable` instead.
+- `1.1.0`
+  - Added `wait(int $seconds);` method.

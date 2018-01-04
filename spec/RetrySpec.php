@@ -149,7 +149,7 @@ class RetrySpec extends ObjectBehavior
     {
         $command->run(1)->shouldBeCalledTimes(1)->willReturn(1);
 
-        $this->once()->run()->shouldReturn(1);
+        $this->attempts(1)->run()->shouldReturn(1);
     }
 
     function it_should_retry_twice_with_twice(Command $command)
@@ -157,7 +157,7 @@ class RetrySpec extends ObjectBehavior
         $command->run(1)->shouldBeCalledTimes(1)->willThrow(new Exception());
         $command->run(2)->shouldBeCalledTimes(1)->willReturn(2);
 
-        $this->twice()->run()->shouldReturn(2);
+        $this->attempts(2)->run()->shouldReturn(2);
     }
 
     function it_should_retry_thrice_with_thrice(Command $command)
@@ -165,7 +165,7 @@ class RetrySpec extends ObjectBehavior
         $command->run(Argument::not(3))->shouldBeCalledTimes(2)->willThrow(new Exception());
         $command->run(3)->shouldBeCalledTimes(1)->willReturn(3);
 
-        $this->thrice()->run()->shouldReturn(3);
+        $this->attempts(3)->run()->shouldReturn(3);
     }
 
     function it_should_retry_until_success(Command $command)
@@ -180,7 +180,7 @@ class RetrySpec extends ObjectBehavior
     {
         $command->run(Argument::type('integer'))->shouldBeCalledTimes(2)->willThrow(new Exception());
 
-        $this->forever()->until(function (int $attempts, $response) {
+        $this->attempts(0)->until(function (int $attempts, $response) {
             return $attempts === 2;
         });
 
@@ -198,7 +198,7 @@ class RetrySpec extends ObjectBehavior
             }
         };
 
-        $this->forever()->until([$class, 'until']);
+        $this->attempts(0)->until([$class, 'until']);
 
         $this->shouldThrow(RetryException::class)->duringRun();
     }
@@ -209,7 +209,7 @@ class RetrySpec extends ObjectBehavior
 
         $errorException = new class extends \Exception {};
 
-        $this->once()->onError(function (int $attempts, $response) use ($errorException) {
+        $this->attempts(1)->onError(function (int $attempts, $response) use ($errorException) {
             throw $errorException;
         });
 
@@ -236,7 +236,7 @@ class RetrySpec extends ObjectBehavior
             }
         };
 
-        $this->once()->onError([$class, 'onError']);
+        $this->attempts(1)->onError([$class, 'onError']);
 
         $this->shouldThrow($errorException)->duringRun();
     }

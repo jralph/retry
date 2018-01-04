@@ -4,12 +4,6 @@ namespace Jralph\Retry;
 
 use BadMethodCallException;
 
-/**
- * @method self once()
- * @method self twice()
- * @method self thrice()
- * @method self forever()
- */
 class Retry
 {
     /**
@@ -327,26 +321,5 @@ class Retry
     protected function retryAvailable()
     {
         return $this->attempt < $this->retries || ! $this->retries || $this->retries == INF;
-    }
-
-    /**
-     * @param string $name
-     * @param array  $arguments
-     * @return mixed
-     */
-    public function __call(string $name, array $arguments)
-    {
-        switch ($name) {
-            case 'once':
-                return $this->attempts(1);
-            case 'twice':
-                return $this->attempts(2);
-            case 'thrice':
-                return $this->attempts(3);
-            case 'forever':
-                return $this->attempts(0);
-        }
-
-        throw new BadMethodCallException(sprintf('Call to undetified method %s@%s', self::class, $name));
     }
 }
