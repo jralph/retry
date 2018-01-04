@@ -2,6 +2,7 @@
 
 namespace spec\Jralph\Retry;
 
+use Exception;
 use Jralph\Retry\Command;
 use Jralph\Retry\Retry;
 use Jralph\Retry\RetryException;
@@ -10,29 +11,14 @@ use Prophecy\Argument;
 
 class RetrySpec extends ObjectBehavior
 {
+    function let(Command $command)
+    {
+        $this->beConstructedWith($command);
+    }
+
     function it_is_initializable()
     {
         $this->shouldHaveType(Retry::class);
-    }
-
-    function it_sets_command_as_callable()
-    {
-        $this->command(function () {});
-    }
-
-    function it_sets_command_as_command_object()
-    {
-        $this->command(new Command(function () {}));
-    }
-
-    function it_returns_self_from_command()
-    {
-        $this->command(function () {})->shouldHaveType(Retry::class);
-    }
-
-    function it_should_error_if_command_is_not_closure()
-    {
-        $this->shouldThrow(\Throwable::class)->duringCommand('test');
     }
 
     function it_sets_number_of_attempts()
@@ -102,96 +88,49 @@ class RetrySpec extends ObjectBehavior
         $this->attempts(3)->shouldHaveType(Retry::class);
     }
 
-    function it_accepts_closure_as_command()
+    function it_returns_1_for_successful_first_try(Command $command)
     {
-        $this->command(function() {});
+        $command->run(1)->shouldBeCalledTimes(1)->willReturn(1);
+
+        $this->run()->shouldReturn(1);
     }
 
-    function it_accepts_callable_as_command()
+    function it_returns_2_for_2_attempts_and_success(Command $command)
     {
-        $class = new class {
-            public function run()
-            {
+        $command->run(1)->shouldBeCalledTimes(1)->willThrow(new Exception());
+        $command->run(2)->shouldBeCalledTimes(1)->willReturn(2);
 
-            }
-        };
-
-        $this->command([$class, 'run']);
+        $this->attempts(2)->run()->shouldReturn(2);
     }
 
-    function it_returns_1_for_successful_first_try_with_callable()
+    function it_returns_27_for_27_attemepts_and_success(Command $command)
     {
-        $class = new class {
-            public function run(int $attempt)
-            {
-                return $attempt;
-            }
-        };
+        $command->run(Argument::not(27))->shouldBeCalledTimes(26)->willThrow(new Exception());
+        $command->run(27)->shouldBeCalledTimes(1)->willReturn(27);
 
-        $this->command([$class, 'run'])->run()->shouldReturn(1);
+        $this->attempts(27)->run()->shouldReturn(27);
     }
 
-    function it_returns_1_for_successful_first_try_with_command_class()
+    function it_throws_retry_exception_if_max_attempts_reached_and_failed(Command $command)
     {
-        $command = new Command(function (int $attempt) {
-            return $attempt;
-        });
-
-        $this->command($command)->run()->shouldReturn(1);
-    }
-
-    function it_returns_1_for_successful_first_try()
-    {
-        $this->command(function (int $attempt) { return $attempt; })->run()->shouldReturn(1);
-    }
-
-    function it_returns_2_for_2_attemepts_and_success()
-    {
-        $this->command(function (int $attempt) {
-            if ($attempt !== 2) {
-                throw new \Exception;
-            }
-
-            return $attempt;
-        })->attempts(2)->run()->shouldReturn(2);
-    }
-
-    function it_returns_27_for_27_attemepts_and_success()
-    {
-        $this->command(function (int $attempt) {
-            if ($attempt !== 27) {
-                throw new \Exception;
-            }
-
-            return $attempt;
-        })->attempts(27)->run()->shouldReturn(27);
-    }
-
-    function it_throws_retry_exception_if_max_attempts_reached_and_failed()
-    {
-        $this->command(function () {
-            throw new \Exception;
-        });
+        $command->run(Argument::type('integer'))->shouldBeCalledTimes(2)->willThrow(new Exception());
 
         $this->attempts(2);
 
         $this->shouldThrow(RetryException::class)->duringRun();
     }
 
-    function it_should_retry_based_on_condition()
+    function it_should_retry_based_on_condition(Command $command)
     {
-        $this->command(function (int $attempt) {
-            if ($attempt !== 2) {
-                return 'hello';
-            }
+        $command->run(1)->shouldBeCalledTimes(1)->willReturn('hello');
+        $command->run(2)->shouldBeCalledTimes(1)->willReturn('world');
 
-            return 'world';
-        })->attempts(2)->onlyIf(function (int $attempts, $response) {
+        $this->attempts(2)->onlyIf(function (int $attempts, $response) {
             return $response == 'hello';
         })->run()->shouldReturn('world');
     }
 
-    function it_should_retry_based_on_condition_callable()
+    function it_should_retry_based_on_condition_callable(Command $command)
     {
         $class = new class {
             public function onlyIf(int $attempts, $response) : bool
@@ -200,68 +139,58 @@ class RetrySpec extends ObjectBehavior
             }
         };
 
-        $this->command(function (int $attempt) {
-            if ($attempt !== 2) {
-                return 'hello';
-            }
+        $command->run(1)->shouldBeCalledTimes(1)->willReturn('hello');
+        $command->run(2)->shouldBeCalledTimes(1)->willReturn('world');
 
-            return 'world';
-        })->attempts(2)->onlyIf([$class, 'onlyIf'])->run()->shouldReturn('world');
+        $this->attempts(2)->onlyIf([$class, 'onlyIf'])->run()->shouldReturn('world');
     }
 
-    function it_should_retry_once_with_once()
+    function it_should_retry_once_with_once(Command $command)
     {
-        $this->command(function (int $attempt) {
-            return $attempt;
-        })->once()->run()->shouldReturn(1);
+        $command->run(1)->shouldBeCalledTimes(1)->willReturn(1);
+
+        $this->once()->run()->shouldReturn(1);
     }
 
-    function it_should_retry_twice_with_twice()
+    function it_should_retry_twice_with_twice(Command $command)
     {
-        $this->command(function (int $attempt) {
-            if ($attempt < 2) {
-                throw new \Exception;
-            }
+        $command->run(1)->shouldBeCalledTimes(1)->willThrow(new Exception());
+        $command->run(2)->shouldBeCalledTimes(1)->willReturn(2);
 
-            return $attempt;
-        })->twice()->run()->shouldReturn(2);
+        $this->twice()->run()->shouldReturn(2);
     }
 
-    function it_should_retry_thrice_with_thrice()
+    function it_should_retry_thrice_with_thrice(Command $command)
     {
-        $this->command(function (int $attempt) {
-            if ($attempt < 3) {
-                throw new \Exception;
-            }
+        $command->run(Argument::not(3))->shouldBeCalledTimes(2)->willThrow(new Exception());
+        $command->run(3)->shouldBeCalledTimes(1)->willReturn(3);
 
-            return $attempt;
-        })->thrice()->run()->shouldReturn(3);
+        $this->thrice()->run()->shouldReturn(3);
     }
 
-    function it_should_retry_until_success()
+    function it_should_retry_until_success(Command $command)
     {
-        $this->command(function (int $attempt) {
-            if ($attempt < 3) {
-                throw new \Exception;
-            }
+        $command->run(Argument::not(3))->shouldBeCalledTimes(2)->willThrow(new Exception());
+        $command->run(3)->shouldBeCalledTimes(1)->willReturn(3);
 
-            return $attempt;
-        })->attempts(4)->run()->shouldReturn(3);
+        $this->attempts(4)->run()->shouldReturn(3);
     }
 
-    function it_should_retry_until_closure()
+    function it_should_retry_until_closure(Command $command)
     {
-        $this->command(function (int $attempt) {
-            throw new \Exception;
-        })->forever()->until(function (int $attempts, $response) {
+        $command->run(Argument::type('integer'))->shouldBeCalledTimes(2)->willThrow(new Exception());
+
+        $this->forever()->until(function (int $attempts, $response) {
             return $attempts === 2;
         });
 
         $this->shouldThrow(RetryException::class)->duringRun();
     }
 
-    function it_should_retry_until_callable()
+    function it_should_retry_until_callable(Command $command)
     {
+        $command->run(Argument::type('integer'))->shouldBeCalledTimes(2)->willThrow(new Exception());
+
         $class = new class {
             public function until(int $attempts, $response)
             {
@@ -269,28 +198,28 @@ class RetrySpec extends ObjectBehavior
             }
         };
 
-        $this->command(function (int $attempt) {
-            throw new \Exception;
-        })->forever()->until([$class, 'until']);
+        $this->forever()->until([$class, 'until']);
 
         $this->shouldThrow(RetryException::class)->duringRun();
     }
 
-    function it_should_run_on_error()
+    function it_should_run_on_error(Command $command)
     {
+        $command->run(Argument::type('integer'))->shouldBeCalledTimes(1)->willThrow(new Exception());
+
         $errorException = new class extends \Exception {};
 
-        $this->command(function (int $attempt) {
-            throw new \Exception;
-        })->once()->onError(function (int $attempts, $response) use ($errorException) {
+        $this->once()->onError(function (int $attempts, $response) use ($errorException) {
             throw $errorException;
         });
 
         $this->shouldThrow($errorException)->duringRun();
     }
 
-    function it_should_run_on_error_with_callable()
+    function it_should_run_on_error_with_callable(Command $command)
     {
+        $command->run(Argument::type('integer'))->shouldBeCalledTimes(1)->willThrow(new Exception());
+
         $errorException = new class extends \Exception {};
 
         $class = new class($errorException) {
@@ -307,17 +236,15 @@ class RetrySpec extends ObjectBehavior
             }
         };
 
-        $this->command(function (int $attempt) {
-            throw new \Exception;
-        })->once()->onError([$class, 'onError']);
+        $this->once()->onError([$class, 'onError']);
 
         $this->shouldThrow($errorException)->duringRun();
     }
 
-    function it_returns_expected_result_using_wait()
+    function it_returns_expected_result_using_wait(Command $command)
     {
-        $this->command(function (int $attempt) {
-            return $attempt;
-        })->wait(1)->run()->shouldReturn(1);  
+        $command->run(1)->shouldBeCalledTimes(1)->willReturn(1);
+
+        $this->wait(1)->run()->shouldReturn(1);
     }
 }

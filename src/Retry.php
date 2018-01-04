@@ -87,20 +87,6 @@ class Retry
     }
 
     /**
-     * Set the command to be run.
-     *
-     * @param callable|Command $command
-     * @return Retry
-     * @deprecated 1.2.0 Use constructor instead.
-     */
-    public function command($command) : Retry
-    {
-        $this->setCommand($command);
-
-        return $this;
-    }
-
-    /**
      * Set the number of retries to attempt.
      *
      * @param int $retries
