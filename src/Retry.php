@@ -184,37 +184,67 @@ class Retry
     {
         $this->attempt++;
 
-        try {
-            $result = $this->callCommand();
-        } catch (\Throwable $thrown) {
-            $result = $thrown;
-        }
+        $result = $this->getResult();
 
         if ($this->shouldRetry($result)) {
-            if ($this->onError) {
-                $this->callOnError($result);
-            }
-
-            if ($this->wait) {
-                $start = time();
-                $end = $start + $this->wait;
-                while (time() < $end) {}
-            }
-
-            return $this->run();
+            return $this->handleRetry($result);
         } else if ($result instanceof \Throwable) {
-            if ($this->onError) {
-                $this->callOnError($result);
-            }
-
-            throw new RetryException(
-                "Maximum number of retries reached. ($this->attempt/$this->retries)",
-                0,
-                $result
-            );
+            return $this->handleThrowable($result);
         }
 
         return $result;
+    }
+    
+    /**
+     * Call the command and get the result, or return the thrown throwable.
+     *
+     * @return mixed
+     */
+    protected function getResult()
+    {
+        try {
+            return $this->callCommand();
+        } catch (\Throwable $thrown) {
+            return $thrown;
+        }
+    }
+
+    /**
+     * Run a retry for a given result.
+     *
+     * @return mixed
+     */
+    protected function handleRetry($result)
+    {
+        if ($this->onError) {
+            $this->callOnError($result);
+        }
+
+        if ($this->wait) {
+            $start = time();
+            $end = $start = $this->wait;
+            while (time() < $end) {}
+        }
+
+        return $this->run();
+    }
+
+    /**
+     * Handle a throwable that could not be retried.
+     *
+     * @return void
+     */
+    protected function handleThrowable(\Throwable $result)
+    {
+        if ($this->onError) {
+            $this->callOnError($result);
+        }
+
+        throw new RetryException(
+            sprintf('Maximum number of retries reached. (%d/%d)', $this->attempt, $this->retries),
+            0,
+            $result
+        );
     }
 
     /**
