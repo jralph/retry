@@ -57,16 +57,16 @@ The `Retry` object is fully chainable to make things simple.
 
 use Jralph\Retry\Retry;
 
-$retry = new Retry;
-
-$result = $retry->command(function (int $attempt) {
+$retry = new Retry(function (int $attempt) {
     // Throwing an error as an example....first 2 attempts will fail.
     if ($attempt < 2) {
         throw new Exception('Just throwing an error as an example!');
     }
     
     return 'Hello World!';
-})->attempts(3)->run();
+});
+
+$result = $retry->attempts(3)->run();
 
 // Outputs 'Hello World!'
 echo $result;

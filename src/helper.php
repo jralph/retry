@@ -12,7 +12,7 @@ namespace Jralph\Retry;
  */
 function retry($attempts, callable $command, callable $onError = null)
 {
-    $retry = new Retry;
+    $retry = new Retry(new Command($command));
 
     if (is_numeric($attempts)) {
         $retry->attempts($attempts);
@@ -23,8 +23,6 @@ function retry($attempts, callable $command, callable $onError = null)
     if ($onError) {
         $retry->onError($onError);
     }
-
-    $retry->command($command);
 
     return $retry->run();
 }

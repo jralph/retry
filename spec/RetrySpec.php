@@ -2,6 +2,7 @@
 
 namespace spec\Jralph\Retry;
 
+use Jralph\Retry\Command;
 use Jralph\Retry\Retry;
 use Jralph\Retry\RetryException;
 use PhpSpec\ObjectBehavior;
@@ -17,6 +18,11 @@ class RetrySpec extends ObjectBehavior
     function it_sets_command_as_callable()
     {
         $this->command(function () {});
+    }
+
+    function it_sets_command_as_command_object()
+    {
+        $this->command(new Command(function () {}));
     }
 
     function it_returns_self_from_command()
@@ -113,7 +119,7 @@ class RetrySpec extends ObjectBehavior
         $this->command([$class, 'run']);
     }
 
-    function it_retusn_1_for_successful_first_try_with_callable()
+    function it_returns_1_for_successful_first_try_with_callable()
     {
         $class = new class {
             public function run(int $attempt)
@@ -123,6 +129,15 @@ class RetrySpec extends ObjectBehavior
         };
 
         $this->command([$class, 'run'])->run()->shouldReturn(1);
+    }
+
+    function it_returns_1_for_successful_first_try_with_command_class()
+    {
+        $command = new Command(function (int $attempt) {
+            return $attempt;
+        });
+
+        $this->command($command)->run()->shouldReturn(1);
     }
 
     function it_returns_1_for_successful_first_try()

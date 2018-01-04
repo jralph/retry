@@ -4,6 +4,12 @@ namespace Jralph\Retry;
 
 use BadMethodCallException;
 
+/**
+ * @method self once()
+ * @method self twice()
+ * @method self thrice()
+ * @method self forever()
+ */
 class Retry
 {
     /**
@@ -54,6 +60,16 @@ class Retry
      * @var int
      */
     protected $wait;
+
+    /**
+     * @param null|Command $command
+     */
+    public function __construct(?Command $command = null)
+    {
+        if ($command) {
+            $this->command($command);
+        }
+    }
 
     /**
      * Set the command to be run.
