@@ -67,7 +67,22 @@ class Retry
     public function __construct(?Command $command = null)
     {
         if ($command) {
-            $this->command($command);
+            $this->setCommand($command);
+        }
+    }
+
+    /**
+     * Set the command to be run.
+     *
+     * @param callable|Command $command
+     * @return void
+     */
+    protected function setCommand($command): void
+    {
+        if ($command instanceof Command) {
+            $this->command = $command;
+        } else {
+            $this->command = new Command($command);
         }
     }
 
@@ -76,14 +91,11 @@ class Retry
      *
      * @param callable|Command $command
      * @return Retry
+     * @deprecated 1.2.0 Use constructor instead.
      */
     public function command($command) : Retry
     {
-        if ($command instanceof Command) {
-            $this->command = $command;
-        } else {
-            $this->command = new Command($command);
-        }
+        $this->setCommand($command);
 
         return $this;
     }
