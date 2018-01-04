@@ -2,12 +2,14 @@
 
 namespace Jralph\Retry;
 
+use BadMethodCallException;
+
 class Retry
 {
     /**
      * The command to execute.
      *
-     * @var callable
+     * @var Command
      */
     protected $command;
 
@@ -56,12 +58,16 @@ class Retry
     /**
      * Set the command to be run.
      *
-     * @param callable $command
+     * @param callable|Command $command
      * @return Retry
      */
-    public function command(callable $command) : Retry
+    public function command($command) : Retry
     {
-        $this->command = $command;
+        if ($command instanceof Command) {
+            $this->command = $command;
+        } else {
+            $this->command = new Command($command);
+        }
 
         return $this;
     }
@@ -77,46 +83,6 @@ class Retry
         $this->retries = $retries;
 
         return $this;
-    }
-
-    /**
-     * Retry once.
-     *
-     * @return Retry
-     */
-    public function once() : Retry
-    {
-        return $this->attempts(1);
-    }
-
-    /**
-     * Retry twice.
-     *
-     * @return Retry
-     */
-    public function twice() : Retry
-    {
-        return $this->attempts(2);
-    }
-
-    /**
-     * Retry thrice.
-     *
-     * @return Retry
-     */
-    public function thrice() : Retry
-    {
-        return $this->attempts(3);
-    }
-
-    /**
-     * Retry forever.
-     *
-     * @return Retry
-     */
-    public function forever() : Retry
-    {
-        return $this->attempts(0);
     }
 
     /**
@@ -189,7 +155,7 @@ class Retry
         if ($this->shouldRetry($result)) {
             return $this->handleRetry($result);
         } else if ($result instanceof \Throwable) {
-            return $this->handleThrowable($result);
+            $this->handleThrowable($result);
         }
 
         return $result;
@@ -203,7 +169,7 @@ class Retry
     protected function getResult()
     {
         try {
-            return $this->callCommand();
+            return $this->command->run($this->attempt);
         } catch (\Throwable $thrown) {
             return $thrown;
         }
@@ -212,6 +178,7 @@ class Retry
     /**
      * Run a retry for a given result.
      *
+     * @param $result
      * @return mixed
      */
     protected function handleRetry($result)
@@ -222,7 +189,7 @@ class Retry
 
         if ($this->wait) {
             $start = time();
-            $end = $start = $this->wait;
+            $end = $start + $this->wait;
             while (time() < $end) {}
         }
 
@@ -232,7 +199,9 @@ class Retry
     /**
      * Handle a throwable that could not be retried.
      *
+     * @param \Throwable $result
      * @return void
+     * @throws RetryException
      */
     protected function handleThrowable(\Throwable $result)
     {
@@ -245,16 +214,6 @@ class Retry
             0,
             $result
         );
-    }
-
-    /**
-     * Call the provided command and return its response.
-     *
-     * @return mixed
-     */
-    protected function callCommand()
-    {
-        return call_user_func($this->command, $this->attempt);
     }
 
     /**
@@ -354,5 +313,26 @@ class Retry
     protected function retryAvailable()
     {
         return $this->attempt < $this->retries || ! $this->retries || $this->retries == INF;
+    }
+
+    /**
+     * @param string $name
+     * @param array  $arguments
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments)
+    {
+        switch ($name) {
+            case 'once':
+                return $this->attempts(1);
+            case 'twice':
+                return $this->attempts(2);
+            case 'thrice':
+                return $this->attempts(3);
+            case 'forever':
+                return $this->attempts(0);
+        }
+
+        throw new BadMethodCallException(sprintf('Call to undetified method %s@%s', self::class, $name));
     }
 }
