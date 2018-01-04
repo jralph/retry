@@ -75,7 +75,7 @@ echo $result;
 
 ### Available Methods
 
-- `new Retry(Command $command);` The closure or Command object to run as the command.
+- `new Retry(Command $command);` The Command object to run as the command.
 - `$retry->attempts(int $attempts);` The maximum number of times to attempt the command. Note, an attempt count of 0 will run for ever!
 - `$retry->wait(int $seconds);` The number of seconds to wait between attempts.
 - `$retry->until(callable $until);` Retry until the result of `$until` returns true. *Note: Works well with `$retry->attempts(0);`*
