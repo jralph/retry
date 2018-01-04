@@ -2,8 +2,6 @@
 
 namespace Jralph\Retry;
 
-use BadMethodCallException;
-
 class Retry
 {
     /**

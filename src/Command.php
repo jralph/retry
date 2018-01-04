@@ -2,8 +2,6 @@
 
 namespace Jralph\Retry;
 
-use function call_user_func;
-
 class Command
 {
     /**
