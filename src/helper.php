@@ -17,7 +17,7 @@ function retry($attempts, callable $command, callable $onError = null)
     if (is_numeric($attempts)) {
         $retry->attempts($attempts);
     } else if (is_callable($attempts)) {
-        $retry->forever()->until($attempts);
+        $retry->attempts(0)->until($attempts);
     }
 
     if ($onError) {
