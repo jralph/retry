@@ -22,7 +22,7 @@ class Command
      * @param int $attempt
      * @return mixed
      */
-    public function run(int $attempt)
+    public function run(int $attempt): mixed
     {
         return call_user_func($this->handler, $attempt);
     }
