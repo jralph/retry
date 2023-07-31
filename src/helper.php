@@ -7,10 +7,11 @@ namespace Jralph\Retry;
  *
  * @param int|callable $attempts The number of attempts to try or a closure that should return true when to stop.
  * @param callable $command
- * @param callable $onError
+ * @param ?callable $onError
  * @return int
+ * @throws RetryException
  */
-function retry($attempts, callable $command, callable $onError = null)
+function retry(int|callable $attempts, callable $command, callable $onError = null): int
 {
     $retry = new Retry(new Command($command));
 

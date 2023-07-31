@@ -3,9 +3,8 @@ language: php
 cache: vendor
 
 php:
-  - 7.1
-  - 7.2
-  
+  - 8.1
+
 before_script:
   - travis_retry composer install --prefer-source --no-interaction --dev
 

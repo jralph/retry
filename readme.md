@@ -7,7 +7,7 @@ A simple library to retry commands in php.
 
 This package is available through composer.
 
-    composer require jralph/retry
+    composer require vsolovei-smartling/retry
    
 ## Basic Use
 
@@ -90,14 +90,15 @@ echo $result;
 - `$retry->run();` Run the command using the specified setup.
 
 ## Change Log
-
+- `2.0.1`
+  - Updated to php 8.1+. 
 - `2.0.0`
   - Removing of deprecated methods.
   - Removal of once, twice, thrice, forever methods in favour of using `attempts(int $attempts)`.
   - Constructor only accepts `Command` objects.
 - `1.2.0` 
   - Updated to php 7.1+.
-  - Dprecated `command` method in favour of passing a command object into the constructor.
+  - Deprecated `command` method in favour of passing a command object into the constructor.
 - `1.1.1`
   - Changed all methods using `\Closure` to use `callable` instead.
 - `1.1.0`
