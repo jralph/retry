@@ -1,13 +1,12 @@
-# PHP Retry [![Build Status](https://travis-ci.org/jralph/retry.svg)](https://travis-ci.org/jralph/retry) [![Latest Stable Version](https://poser.pugx.org/jralph/retry/v/stable)](https://packagist.org/packages/jralph/retry) [![Total Downloads](https://poser.pugx.org/jralph/retry/downloads.svg)](https://packagist.org/packages/jralph/retry) [![Latest Unstable Version](https://poser.pugx.org/jralph/retry/v/unstable.svg)](https://packagist.org/packages/jralph/retry) [![License](https://poser.pugx.org/jralph/retry/license.svg)](https://packagist.org/packages/jralph/retry)
+# PHP Retry [![Latest Stable Version](https://poser.pugx.org/jralph/retry/v/stable)](https://packagist.org/packages/jralph/retry) [![Total Downloads](https://poser.pugx.org/jralph/retry/downloads.svg)](https://packagist.org/packages/jralph/retry) [![Latest Unstable Version](https://poser.pugx.org/jralph/retry/v/unstable.svg)](https://packagist.org/packages/jralph/retry) [![License](https://poser.pugx.org/jralph/retry/license.svg)](https://packagist.org/packages/jralph/retry)
 
 A simple library to retry commands in php.
-
 
 ## Installation
 
 This package is available through composer.
 
-    composer require vsolovei-smartling/retry
+    composer require jralph/retry
    
 ## Basic Use
 
@@ -90,8 +89,8 @@ echo $result;
 - `$retry->run();` Run the command using the specified setup.
 
 ## Change Log
-- `2.0.1`
-  - Updated to php 8.1+. 
+- `3.0.0`
+  - Updated to php 8.0+. 
 - `2.0.0`
   - Removing of deprecated methods.
   - Removal of once, twice, thrice, forever methods in favour of using `attempts(int $attempts)`.

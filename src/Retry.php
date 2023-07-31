@@ -51,7 +51,7 @@ class Retry
      *
      * @var int
      */
-    protected int $wait;
+    protected int $wait = 0;
 
     public function __construct(?Command $command = null)
     {

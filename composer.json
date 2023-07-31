@@ -1,5 +1,5 @@
 {
-    "name": "vsolovei-smartling/retry",
+    "name": "jralph/retry",
     "description": "A simple library to retry things.",
     "license": "MIT",
     "authors": [
@@ -12,7 +12,7 @@
         "php": "^8.0"
     },
     "require-dev": {
-        "phpspec/phpspec": "^3.1"
+        "phpspec/phpspec": "^7.4"
     },
     "autoload": {
         "psr-4": {
