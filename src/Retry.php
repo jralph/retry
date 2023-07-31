@@ -9,21 +9,21 @@ class Retry
      *
      * @var Command
      */
-    protected $command;
+    protected Command $command;
 
     /**
      * The number of attempts to make.
      *
      * @var int
      */
-    protected $retries = 1;
+    protected int $retries = 1;
 
     /**
      * The current attempt;
      *
      * @var int
      */
-    protected $attempt = 0;
+    protected int $attempt = 0;
 
     /**
      * A closure to determine if a retry should be attempted.
@@ -51,11 +51,8 @@ class Retry
      *
      * @var int
      */
-    protected $wait;
+    protected int $wait = 0;
 
-    /**
-     * @param null|Command $command
-     */
     public function __construct(?Command $command = null)
     {
         if ($command) {
@@ -69,7 +66,7 @@ class Retry
      * @param callable|Command $command
      * @return void
      */
-    protected function setCommand($command): void
+    protected function setCommand(callable|Command $command): void
     {
         if ($command instanceof Command) {
             $this->command = $command;
@@ -84,7 +81,7 @@ class Retry
      * @param int $retries
      * @return Retry
      */
-    public function attempts(int $retries) : Retry
+    public function attempts(int $retries): Retry
     {
         $this->retries = $retries;
 
@@ -99,7 +96,7 @@ class Retry
      * @param callable $until
      * @return Retry
      */
-    public function until(callable $until) : Retry
+    public function until(callable $until): Retry
     {
         $this->until = $until;
 
@@ -112,7 +109,7 @@ class Retry
      * @param callable $callback A callback that accepts the response/throwable from the attempt at the first param.
      * @return Retry
      */
-    public function onlyIf(callable $callback) : Retry
+    public function onlyIf(callable $callback): Retry
     {
         $this->onlyIf = $callback;
 
@@ -125,7 +122,7 @@ class Retry
      * @param callable $callback
      * @return Retry
      */
-    public function onError(callable $callback) : Retry
+    public function onError(callable $callback): Retry
     {
         $this->onError = $callback;
 
@@ -138,7 +135,7 @@ class Retry
      * @param int $seconds
      * @return Retry
      */
-    public function wait(int $seconds) : Retry
+    public function wait(int $seconds): Retry
     {
         $this->wait = $seconds;
 
@@ -149,10 +146,10 @@ class Retry
      * Run the command and return the number of retries it took
      * or throw an exception if the process failed.
      *
-     * @throws RetryException
      * @return mixed
+     * @throws RetryException
      */
-    public function run()
+    public function run(): mixed
     {
         $this->attempt++;
 
@@ -160,19 +157,21 @@ class Retry
 
         if ($this->shouldRetry($result)) {
             return $this->handleRetry($result);
-        } else if ($result instanceof \Throwable) {
+        }
+
+        if ($result instanceof \Throwable) {
             $this->handleThrowable($result);
         }
 
         return $result;
     }
-    
+
     /**
      * Call the command and get the result, or return the thrown throwable.
      *
      * @return mixed
      */
-    protected function getResult()
+    protected function getResult(): mixed
     {
         try {
             return $this->command->run($this->attempt);
@@ -184,19 +183,18 @@ class Retry
     /**
      * Run a retry for a given result.
      *
-     * @param $result
+     * @param mixed $result
      * @return mixed
+     * @throws RetryException
      */
-    protected function handleRetry($result)
+    protected function handleRetry(mixed $result): mixed
     {
         if ($this->onError) {
             $this->callOnError($result);
         }
 
         if ($this->wait) {
-            $start = time();
-            $end = $start + $this->wait;
-            while (time() < $end) {}
+            sleep($this->wait);
         }
 
         return $this->run();
@@ -209,7 +207,7 @@ class Retry
      * @return void
      * @throws RetryException
      */
-    protected function handleThrowable(\Throwable $result)
+    protected function handleThrowable(\Throwable $result): void
     {
         if ($this->onError) {
             $this->callOnError($result);
@@ -225,10 +223,10 @@ class Retry
     /**
      * Call the provided on error handler.
      *
-     * @param $result
+     * @param mixed $result
      * @return mixed
      */
-    protected function callOnError($result)
+    protected function callOnError(mixed $result): mixed
     {
         return call_user_func($this->onError, $this->attempt, $result);
     }
@@ -236,10 +234,10 @@ class Retry
     /**
      * Determine if a retry should is possible or not.
      *
-     * @param $response
+     * @param mixed $response
      * @return bool
      */
-    protected function shouldRetry($response) : bool
+    protected function shouldRetry(mixed $response): bool
     {
         return $this->retryAvailable() && $this->passesOnlyIf($response) && !$this->reachedUntil($response);
     }
@@ -247,10 +245,10 @@ class Retry
     /**
      * Does the retry result pass the only if callback?
      *
-     * @param $response
+     * @param mixed $response
      * @return bool
      */
-    protected function passesOnlyIf($response) : bool
+    protected function passesOnlyIf(mixed $response): bool
     {
         if ($this->onlyIf) {
             return $this->callOnlyIf($response);
@@ -262,10 +260,10 @@ class Retry
     /**
      * Call the onlyIf handler.
      *
-     * @param $response
+     * @param mixed $response
      * @return mixed
      */
-    protected function callOnlyIf($response)
+    protected function callOnlyIf(mixed $response): mixed
     {
         return call_user_func($this->onlyIf, $this->attempt, $response);
     }
@@ -273,25 +271,21 @@ class Retry
     /**
      * Determine if the command was successful.
      *
-     * @param $response
+     * @param mixed $response
      * @return bool
      */
-    protected function isSuccessful($response) : bool
+    protected function isSuccessful(mixed $response): bool
     {
-        if ($response instanceof \Throwable) {
-            return false;
-        }
-
-        return true;
+        return !($response instanceof \Throwable);
     }
 
     /**
      * Have we reached the custom defined until callback?
      *
-     * @param $response
+     * @param mixed $response
      * @return bool
      */
-    protected function reachedUntil($response) : bool
+    protected function reachedUntil(mixed $response): bool
     {
         if ($this->until) {
             return $this->callUntil($response);
@@ -303,12 +297,12 @@ class Retry
     /**
      * Call the until handler.
      *
-     * @param $response
+     * @param mixed $response
      * @return bool
      */
-    protected function callUntil($response)
+    protected function callUntil(mixed $response): bool
     {
-        return (bool) call_user_func($this->until, $this->attempt, $response);
+        return (bool)call_user_func($this->until, $this->attempt, $response);
     }
 
     /**
@@ -316,8 +310,8 @@ class Retry
      *
      * @return bool
      */
-    protected function retryAvailable()
+    protected function retryAvailable(): bool
     {
-        return $this->attempt < $this->retries || ! $this->retries || $this->retries == INF;
+        return $this->attempt < $this->retries || $this->retries === 0;
     }
 }

@@ -1,7 +1,6 @@
-# PHP Retry [![Build Status](https://travis-ci.org/jralph/retry.svg)](https://travis-ci.org/jralph/retry) [![Latest Stable Version](https://poser.pugx.org/jralph/retry/v/stable)](https://packagist.org/packages/jralph/retry) [![Total Downloads](https://poser.pugx.org/jralph/retry/downloads.svg)](https://packagist.org/packages/jralph/retry) [![Latest Unstable Version](https://poser.pugx.org/jralph/retry/v/unstable.svg)](https://packagist.org/packages/jralph/retry) [![License](https://poser.pugx.org/jralph/retry/license.svg)](https://packagist.org/packages/jralph/retry)
+# PHP Retry [![Latest Stable Version](https://poser.pugx.org/jralph/retry/v/stable)](https://packagist.org/packages/jralph/retry) [![Total Downloads](https://poser.pugx.org/jralph/retry/downloads.svg)](https://packagist.org/packages/jralph/retry) [![Latest Unstable Version](https://poser.pugx.org/jralph/retry/v/unstable.svg)](https://packagist.org/packages/jralph/retry) [![License](https://poser.pugx.org/jralph/retry/license.svg)](https://packagist.org/packages/jralph/retry)
 
 A simple library to retry commands in php.
-
 
 ## Installation
 
@@ -90,14 +89,15 @@ echo $result;
 - `$retry->run();` Run the command using the specified setup.
 
 ## Change Log
-
+- `3.0.0`
+  - Updated to php 8.0+. 
 - `2.0.0`
   - Removing of deprecated methods.
   - Removal of once, twice, thrice, forever methods in favour of using `attempts(int $attempts)`.
   - Constructor only accepts `Command` objects.
 - `1.2.0` 
   - Updated to php 7.1+.
-  - Dprecated `command` method in favour of passing a command object into the constructor.
+  - Deprecated `command` method in favour of passing a command object into the constructor.
 - `1.1.1`
   - Changed all methods using `\Closure` to use `callable` instead.
 - `1.1.0`
